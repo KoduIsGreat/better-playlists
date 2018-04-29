@@ -118,6 +118,8 @@ class App extends Component {
   componentDidMount(){
     let parsed = queryString.parse(window.location.search)
     let accessToken = parsed.access_token
+    if(!accessToken)
+      return;
 
     fetch('https://api.spotify.com/v1/me',{
       headers: {'Authorization': 'Bearer ' + accessToken}
@@ -150,9 +152,9 @@ class App extends Component {
     serverData.user &&
     serverData.playlists 
     ? serverData.playlists.filter(playlist =>
-      playlist.name.toLowerCase().includes(
-        this.state.filterString.toLowerCase())
-    ) : []
+        playlist.name.toLowerCase().includes(
+        this.state.filterString.toLowerCase())) 
+    : []
 
     return (
       <div className="App">
@@ -170,7 +172,10 @@ class App extends Component {
               <Playlist playlist={playlist}/>
             )}
 
-          </div> : <button onClick={() => window.location = 'http://localhost:8888/login'} 
+          </div> : <button onClick={() => {
+            window.location = window.location.href.includes('localhost')
+            ?'http://localhost:8888/login' 
+            :'https://spotify-sucks-backend-herokuapp.com/login'}} 
            style={{padding : '20px', 'font-size' : '50px', 'margin-top': '20px'}}>
            Sign in with Spotify
            </button>
