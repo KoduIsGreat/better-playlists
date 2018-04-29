@@ -1,7 +1,5 @@
 import React, { Component } from 'react'
-import queryString from 'query-string'
 import './App.css'
-
 
 let defaultStyle = {
   color: '#fff'
@@ -116,8 +114,10 @@ class App extends Component {
   }
 
   componentDidMount(){
+    let accessToken =
+    new URLSearchParams(window.location.search).get('access_token')
     let parsed = queryString.parse(window.location.search)
-    let accessToken = parsed.access_token
+    // let accessToken = parsed.access_token
     if(!accessToken)
       return;
 
