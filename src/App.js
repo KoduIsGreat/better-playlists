@@ -1,8 +1,13 @@
 import React, { Component } from 'react'
+import queryString from 'query-string'
 import './App.css'
+
+
 let defaultStyle = {
   color: '#fff'
 }
+const minsInHour = 60
+const secInMin = 60
 let fakeServerData ={
   user: { 
     name : 'Adam',
@@ -58,17 +63,16 @@ class HoursCounter extends Component{
     let allSongs = this.props.playlists.reduce((songs, eachPlaylist) =>{
       return songs.concat(eachPlaylist.songs)
     } , [])
-    let totalDurationInSeconds = allSongs.reduce((sum,eachSong) =>{
-      return sum+eachSong.duration
+    let minutesOfMusic = allSongs.reduce((sum,eachSong) =>{
+      return sum+Math.floor(eachSong.duration/ secInMin)
       }  ,0)
-    let totalDuration = Math.floor(totalDurationInSeconds / (60*60)) 
+    let timeOfMusic = minutesOfMusic < minsInHour ?
+      minutesOfMusic +' Minutes' :
+      Math.floor(minutesOfMusic / minsInHour) +' Hours'
 
     return (
       <div style={{...defaultStyle, width: "40%", display: 'inline-block'}}>
-      { totalDuration !== 0 ?
-          <h2 >{totalDuration} Hours</h2>
-        : <h2> Less than 1 Hour</h2>
-      }
+          <h2 >{timeOfMusic}</h2>
       </div>
     )
   }
@@ -91,7 +95,7 @@ class Playlist extends Component {
     let playlist = this.props.playlist
     return (
       <div style={{...defaultStyle, width: "20%", display:'inline-block'}}>
-        <img />
+        <img src={playlist.imgUrl} style={{width : '160px', padding: '20px'}}/>
         <h3>{playlist.name}</h3>
         <ul>
           {playlist.songs.map(song =>
@@ -107,21 +111,45 @@ class App extends Component {
   constructor() {
     super()
     this.state = {
-      serverData: {},
       filterString: ''
     }
   }
 
   componentDidMount(){
-    setTimeout(() => {
-      this.setState({serverData: fakeServerData})
-    }, 500)
+    let parsed = queryString.parse(window.location.search)
+    let accessToken = parsed.access_token
+
+    fetch('https://api.spotify.com/v1/me',{
+      headers: {'Authorization': 'Bearer ' + accessToken}
+    }).then((response) => response.json())
+    .then(data => this.setState({
+      user:{
+        name : data.display_name
+      }
+    }))
+
+    fetch('https://api.spotify.com/v1/me/playlists',{
+      headers: {'Authorization': 'Bearer ' + accessToken}
+    }).then((response) => response.json())
+    .then( data => this.setState({
+        playlists : data.items.map(item => {
+          console.log(item);
+          return {
+            name: item.name,
+            imgUrl: item.images[0].url, 
+            songs:[]
+          }
+        })
+      }))
+
   }
 
   render() {
-    let serverData = this.state.serverData
-    let playlistsToRender = serverData.user ? serverData.user.playlists
-    .filter(playlist =>
+    let serverData = this.state
+    let playlistsToRender = 
+    serverData.user &&
+    serverData.playlists 
+    ? serverData.playlists.filter(playlist =>
       playlist.name.toLowerCase().includes(
         this.state.filterString.toLowerCase())
     ) : []
@@ -142,7 +170,10 @@ class App extends Component {
               <Playlist playlist={playlist}/>
             )}
 
-          </div> : <h1 style={defaultStyle}>Loading...</h1>
+          </div> : <button onClick={() => window.location = 'http://localhost:8888/login'} 
+           style={{padding : '20px', 'font-size' : '50px', 'margin-top': '20px'}}>
+           Sign in with Spotify
+           </button>
         }
       </div>
     )
