@@ -3,6 +3,9 @@
 # dependencies
 /node_modules
 
+#spotify keys
+setupkeys.sh
+
 # testing
 /coverage
 
