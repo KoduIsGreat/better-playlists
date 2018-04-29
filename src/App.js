@@ -116,8 +116,6 @@ class App extends Component {
   componentDidMount(){
     let accessToken =
     new URLSearchParams(window.location.search).get('access_token')
-    let parsed = queryString.parse(window.location.search)
-    // let accessToken = parsed.access_token
     if(!accessToken)
       return;
 
