@@ -58,12 +58,17 @@ class HoursCounter extends Component{
     let allSongs = this.props.playlists.reduce((songs, eachPlaylist) =>{
       return songs.concat(eachPlaylist.songs)
     } , [])
-    let totalDuration = allSongs.reduce((sum,eachSong) =>{
+    let totalDurationInSeconds = allSongs.reduce((sum,eachSong) =>{
       return sum+eachSong.duration
       }  ,0)
+    let totalDuration = Math.floor(totalDurationInSeconds / (60*60)) 
+
     return (
       <div style={{...defaultStyle, width: "40%", display: 'inline-block'}}>
-        <h2 >{totalDuration} Hours</h2>
+      { totalDuration !== 0 ?
+          <h2 >{totalDuration} Hours</h2>
+        : <h2> Less than 1 Hour</h2>
+      }
       </div>
     )
   }
@@ -120,7 +125,7 @@ class App extends Component {
       playlist.name.toLowerCase().includes(
         this.state.filterString.toLowerCase())
     ) : []
-    
+
     return (
       <div className="App">
         {
